@@ -1,4 +1,5 @@
 ## Usage
+[![Build Status](https://travis-ci.org/Everyplay/backbone-db-mongodb.png?branch=master)](https://travis-ci.org/Everyplay/backbone-db-mongodb)
 
 ```js
 var MongoDB = require('backbone-db-mongodb');
