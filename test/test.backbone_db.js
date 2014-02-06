@@ -4,7 +4,7 @@ var MyModel = setup.MyModel;
 var MyCollection = setup.MyCollection;
 var shared = require('backbone-db/test');
 
-describe('backbone-db-mongodb', function () {
+describe('backbone-db tests', function () {
   before(function (next) {
     var self = this;
     setup.setupDb(function () {
