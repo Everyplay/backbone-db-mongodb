@@ -175,7 +175,9 @@ _.extend(MongoDB.prototype, Db.prototype, {
         }, {
           upsert: options.upsert || false
         },
-        callback
+        function (err, res) {
+          callback(err, res || options.ignoreFailures ? 1 : res);
+        }
       );
     });
   }

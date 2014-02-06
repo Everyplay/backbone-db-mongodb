@@ -114,5 +114,22 @@ describe('MongoDB', function () {
         }, assert).otherwise(done);
     });
 
+    it('should fail inc operation gracefully with ignoreFailures options', function (done) {
+      model = new this.Model({
+        id: 'foo'
+      });
+      model
+        .save(null, {
+          inc: {
+            attribute: 'counter',
+            amount: 1
+          },
+          ignoreFailures: true
+        })
+        .then(function (m) {
+          done();
+        }).otherwise(done);
+    });
+
   });
 });
