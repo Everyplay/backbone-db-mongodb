@@ -20,7 +20,7 @@ function convertSort(sortProp) {
 }
 
 function toMongoDoc(doc) {
-  if (doc._id) {
+  if (doc && doc._id) {
     if (typeof doc._id === "string" && doc._id.length === "24") {
       debug('converting _id to MongoID');
       doc._id = new ObjectId(doc._id);
@@ -30,7 +30,7 @@ function toMongoDoc(doc) {
 }
 
 function fromMongoDoc(doc) {
-  if (doc._id) {
+  if (doc && doc._id) {
     if (typeof doc._id === "object" && doc._id.toString && doc._id.toString().length === "24") {
       debug('converting _id to MongoID');
       doc._id = doc._id.toString();
