@@ -9,7 +9,9 @@ describe('Collection tests', function () {
   var testId;
 
   before(function (done) {
-    setup.setupDb(done);
+    setup.setupDb(function() {
+      done();
+    });
   });
 
   after(function (done) {
@@ -21,19 +23,17 @@ describe('Collection tests', function () {
     collection
       .create({
         'id_check': 1
-      }, {
-        wait: true
       })
-      .then(function (m) {
-        assert(m.get('id_check') === collection.at(0).get('id_check'));
+      .done(function (m) {
         model = m;
+        assert(m.get('id_check') === collection.at(0).get('id_check'));
         done();
-      }).otherwise(done);
+      }, done);
   });
 
   it('should fetch created model', function (done) {
     var m2 = new this.Model({
-      id: model.id
+      id: model.get(model.idAttribute)
     });
     m2.fetch().then(function (m) {
       assert(m.get('id_check') === m2.get('id_check'));
@@ -56,9 +56,9 @@ describe('Collection tests', function () {
     testId = model.id;
     model
       .destroy()
-      .then(function () {
+      .done(function () {
         done();
-      }).otherwise(done);
+      }, done);
   });
 
   it('should check that model was removed', function (done) {

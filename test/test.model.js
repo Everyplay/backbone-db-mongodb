@@ -22,9 +22,9 @@ describe('MongoDB', function () {
         asd: 'das',
         counter: 2
       });
-      m.save().then(function () {
+      m.save().done(function () {
         done();
-      });
+      }, done);
     });
 
     it('should fetch saved model', function (done) {

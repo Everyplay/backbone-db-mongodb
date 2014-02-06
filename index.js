@@ -19,25 +19,6 @@ function convertSort(sortProp) {
   return ret;
 }
 
-function toMongoDoc(doc) {
-  if (doc && doc._id) {
-    if (typeof doc._id === "string" && doc._id.length === "24") {
-      debug('converting _id to MongoID');
-      doc._id = new ObjectId(doc._id);
-    }
-  }
-  return doc;
-}
-
-function fromMongoDoc(doc) {
-  if (doc && doc._id) {
-    if (typeof doc._id === "object" && doc._id.toString && doc._id.toString().length === "24") {
-      debug('converting _id to MongoID');
-      doc._id = doc._id.toString();
-    }
-  }
-  return doc;
-}
 
 MongoDB.sync = Db.sync;
 _.extend(MongoDB.prototype, Db.prototype, {
@@ -51,6 +32,20 @@ _.extend(MongoDB.prototype, Db.prototype, {
     } else {
       throw new Error('Cannot get collection for ' + model.type);
     }
+  },
+
+  _getId: function(model) {
+    var id;
+    if(model && model.get) {
+      id = model.get('_id');
+    }
+    if(!id) {
+      id = model.get(model.idAttribute);
+    }
+    if(typeof id === "string" && id.length === 24) {
+      id = new ObjectId(id);
+    }
+    return id;
   },
 
   findAll: function (model, options, callback) {
@@ -70,7 +65,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
         $lt: options.before_id
       };
     }
-    debug('findAll', query, 'limit:', limit, 'offset:', offset, 'sort:', sort);
+    debug('findAll %s: limit: %s, offset: %s, sort: %s', JSON.stringify(query), limit, offset, JSON.stringify(sort));
     this._getCollection(model, options, function (err, collection) {
       if (err) return callback(err);
       collection
@@ -79,9 +74,6 @@ _.extend(MongoDB.prototype, Db.prototype, {
         .skip(offset)
         .limit(limit)
         .toArray(function (err, res) {
-          if (res && res.length > 0) {
-            res = _.map(res, fromMongoDoc);
-          }
           callback(err, res);
         });
     });
@@ -90,13 +82,13 @@ _.extend(MongoDB.prototype, Db.prototype, {
   find: function (model, options, callback) {
     options = options || {};
     var query = options.where ||  {
-      _id: model.get(model.idAttribute)
+      _id: this._getId(model)
     };
-    debug('find', query);
+    debug('find %s', JSON.stringify(query));
     this._getCollection(model, options, function (err, col) {
       if (err) return callback(err);
       col.findOne(query, function (err, res) {
-        return callback(err, fromMongoDoc(res));
+        return callback(err, res);
       });
     });
   },
@@ -119,8 +111,8 @@ _.extend(MongoDB.prototype, Db.prototype, {
   createId: function (model, options, callback) {
     var createIdFn = model.createId ? model.createId : this._createDefaultId;
     createIdFn(function (err, id) {
-      model.set(model.idAttribute, id.toString());
-      model.set('_id', id.toString());
+      model.set(model.idAttribute, id);
+      model.set('_id', id);
       callback(err);
     });
   },
@@ -135,30 +127,29 @@ _.extend(MongoDB.prototype, Db.prototype, {
     if (model.isNew()) {
       return this.create(model, options, callback);
     }
-    if (!model.has('_id') && model.has(model.idAttribute)) {
-      model.set('_id', model.get(model.idAttribute));
-    }
     if (options.inc) {
       return this.inc(model, options, callback);
     }
     this._getCollection(model, options, function (err, collection) {
       if (err) return callback(err);
-      collection.save(toMongoDoc(model.toJSON()), callback);
+      model.set('_id', self._getId(model));
+      collection.save(model.toJSON(), function(err, res) {
+        callback(err, model.toJSON());
+      });
     });
   },
 
   destroy: function (model, options, callback) {
     var self = this;
-    debug("destroy: " + model.get(model.idAttribute));
+    debug("destroy : " + model.get(model.idAttribute));
     if (model.isNew()) {
       return false;
     }
 
     this._getCollection(model, options, function (err, collection) {
       if (err) return callback(err);
-      var data = toMongoDoc(model.toJSON());
       collection.remove({
-        _id: data._id
+        _id: self._getId(model)
       }, function (err, res) {
         callback(err, res || options.ignoreFailures ? 1 : res);
       });
@@ -169,6 +160,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
     if (!options || !options.inc || !options.inc.attribute) {
       throw new Error('inc settings must be defined');
     }
+    var self = this;
     var attribute = options.inc.attribute;
     var amount = options.inc.amount || 1;
     var inc = {};
@@ -176,9 +168,8 @@ _.extend(MongoDB.prototype, Db.prototype, {
     debug('inc:' + JSON.stringify(inc));
     this._getCollection(model, options, function (err, col) {
       if (err) return callback(err);
-      var data = toMongoDoc(model.toJSON());
       col.update({
-          _id: data._id
+          _id: self._getId(model)
         }, {
           $inc: inc
         }, {
