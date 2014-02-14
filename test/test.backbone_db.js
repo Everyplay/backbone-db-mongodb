@@ -1,7 +1,4 @@
-var assert = require('assert');
 var setup = require('./setup');
-var MyModel = setup.MyModel;
-var MyCollection = setup.MyCollection;
 var shared = require('backbone-db/test');
 
 describe('backbone-db tests', function () {
