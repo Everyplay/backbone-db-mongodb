@@ -128,7 +128,6 @@ describe('MongoDB', function () {
     });
     
     it('should use model.idAttribute as _id but not add it to attributes', function() {
-      console.log(model.attributes);
       assert.ok(model.get('_id') === undefined);
     });
 
