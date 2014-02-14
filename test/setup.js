@@ -1,7 +1,6 @@
-var assert = require('assert');
-var _ = require('underscore');
+require('mocha-as-promised')();
+var _ = require('lodash');
 var MongoDB = require('../');
-var Backbone = require('backbone');
 var Promises = require('backbone-promises');
 var Model = Promises.Model;
 var Collection = Promises.Collection;
@@ -27,10 +26,10 @@ var MyCollection = exports.MyCollection = Collection.extend({
 exports.setupDb = function (cb) {
   if (db) return cb(null, db);
   var mongoPort = process.env.MONGO_PORT || 27017;
-  var url = format("mongodb://localhost:%s/backbone-db-tests", mongoPort);
+  var url = format('mongodb://localhost:%s/backbone-db-tests', mongoPort);
   MongoClient.connect(url, {}, function (err, database) {
     if (err) {
-      console.error("Start mongoDB or tune settings in test.model.js", err);
+      console.error('Start mongoDB or tune settings in test.model.js', err);
       cb(err);
     }
     db = database;
@@ -40,7 +39,7 @@ exports.setupDb = function (cb) {
     this.Model.prototype.db = store;
     this.Collection.prototype.db = store;
     this.db = store;
-    cb(err, store);
+    cb.call(this, err, store);
   });
 };
 
@@ -73,10 +72,7 @@ exports.insertFixtureData = function (collection, cb) {
   });
 
   Promises.when.all(fns)
-    .then(function () {
+    .done(function () {
       cb(null);
-    })
-    .otherwise(function (err) {
-      cb(err);
-    });
+    }, cb);
 };

@@ -1,14 +1,23 @@
-var assert = require('assert');
 var setup = require('./setup');
-var MyModel = setup.MyModel;
+var assert = require('assert');
+var Promised = require('backbone-promises');
+
 
 describe('MongoDB', function () {
   var id;
-  var model;
 
-  before(function (done) {
+  before(function (next) {
     var self = this;
-    setup.setupDb(done);
+    setup.setupDb(function () {
+      self.Model = this.Model;
+      self.Collection = this.Collection;
+      self.db = this.db;
+      next();
+    });
+  });
+
+  after(function (next) {
+    setup.clearDb(next);
   });
 
   after(function (done) {
@@ -16,120 +25,118 @@ describe('MongoDB', function () {
   });
 
   describe('#Model', function () {
-    it('should .save model with given id', function (done) {
-      var m = new this.Model({
-        id: 1,
+    var model;
+
+    it('should .save model with given id', function () {
+      var deferred = Promised.when.defer();
+      model = new this.Model({
         asd: 'das',
         counter: 2
       });
-      m.save().done(function () {
-        done();
-      }, done);
+
+      model.db.createId(model, {}, function(err) {
+        if(err) return deferred.reject(err);
+        model.save().then(deferred.resolve);
+      });
+      return deferred.promise;
     });
 
-    it('should fetch saved model', function (done) {
+    it('should fetch saved model', function () {
       var m2 = new this.Model({
-        id: 1
+        id: model.get(model.idAttribute)
       });
-      m2
-        .fetch()
+      return m2.fetch()
         .then(function () {
           assert.equal(m2.get('asd'), 'das');
           assert.equal(m2.get('counter'), 2);
-          done();
-        }, assert).otherwise(done);
+        });
     });
 
-    it('should .save model without id', function (done) {
+    it('should .save model without id', function () {
       var m = new this.Model({
         data: 'foo',
         counter: 5
       });
-      m.save().then(function (m) {
-        id = m.get('id');
-        done();
-      }).otherwise(done);
+      return m.save().then(function (m) {
+        id = m.get(m.idAttribute);
+      });
     });
 
-    it('should fetch saved model', function (done) {
+    it('should fetch saved model', function () {
       model = new this.Model({
         id: id
       });
-      model
-        .fetch()
+      return model.fetch()
         .then(function () {
           assert.equal(model.get('data'), 'foo');
           assert.equal(model.get('counter'), 5);
-          done();
-        }, assert).otherwise(done);
+        });
     });
 
-    it('should update model', function (done) {
+    it('should update model', function () {
       model.set('data', 'new');
-      model
-        .save()
-        .then(function (m) {
-          done();
-        }).otherwise(done);
+      return model.save();
     });
 
-    it('should fetch updated model', function (done) {
+    it('should fetch updated model', function () {
       model = new this.Model({
         id: id
       });
-      model
-        .fetch()
+      return model.fetch()
         .then(function () {
           assert.equal(model.get('data'), 'new');
-          done();
-        }, assert).otherwise(done);
+        });
     });
 
-    it('should inc model attribute', function (done) {
+    it('should inc model attribute', function () {
       model = new this.Model({
         id: id
       });
-      model
+      return model
         .save(null, {
           inc: {
             attribute: 'counter',
             amount: 1
           }
-        })
-        .then(function (m) {
-          done();
-        }).otherwise(done);
+        });
     });
 
-    it('should check that attribute was increased', function (done) {
+    it('should check that attribute was increased', function () {
       model = new this.Model({
         id: id
       });
-      model
+      return model
         .fetch()
         .then(function () {
           assert.equal(model.get('counter'), 6);
           assert.equal(model.get('data'), 'new');
-          done();
-        }, assert).otherwise(done);
+        });
     });
 
-    it('should fail inc operation gracefully with ignoreFailures options', function (done) {
-      model = new this.Model({
+    it('should fail inc operation gracefully with ignoreFailures options', function () {
+      var m = new this.Model({
         id: 'foo'
       });
-      model
+      return m
         .save(null, {
           inc: {
             attribute: 'counter',
             amount: 1
           },
           ignoreFailures: true
-        })
-        .then(function (m) {
-          done();
-        }).otherwise(done);
+        });
+    });
+    
+    it('should use model.idAttribute as _id but not add it to attributes', function() {
+      console.log(model.attributes);
+      assert.ok(model.get('_id') === undefined);
     });
 
+    it('should convert _id to ObjectId if it is ObjectId like', function() {
+      var m = new this.Model({
+        id: ''+model.get(model.idAttribute)
+      });
+      return m.fetch();
+    });
   });
 });

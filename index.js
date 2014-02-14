@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
   Db = require('backbone-db'),
   debug = require('debug')('backbone-db-mongodb'),
   ObjectId = require('mongodb').BSONPure.ObjectID;
@@ -10,7 +10,7 @@ function MongoDB(client) {
 
 function convertSort(sortProp) {
   var sortOrder = 1;
-  if (sortProp && sortProp[0] === "-") {
+  if (sortProp && sortProp[0] === '-') {
     sortOrder = -1;
     sortProp = sortProp.substr(1);
   }
@@ -34,15 +34,38 @@ _.extend(MongoDB.prototype, Db.prototype, {
     }
   },
 
+  _filter: function(res, model) {
+    var self = this;
+    if(Array.isArray(res)) {
+      return _.map(res, function(item) {
+        return self._filter(item, model);
+      });
+    }
+    var m = model.model || model;
+    var idAttr = m.idAttribute || m.prototype.idAttribute;
+
+    if(res._id) {
+      if(!res[idAttr]) {
+        res[idAttr] = res._id;
+      }
+      delete res._id;
+    }
+    return res;
+  },
+
   _getId: function(model) {
     var id;
+
     if(model && model.get) {
-      id = model.get('_id');
-    }
-    if(!id) {
       id = model.get(model.idAttribute);
     }
-    if(typeof id === "string" && id.length === 24) {
+    if(!id) {
+      id = model.get('_id');
+    }
+    if(!id && model) {
+      id = model.id || model._id;
+    }
+    if(typeof id === 'string' && id.length === 24) {
       id = new ObjectId(id);
     }
     return id;
@@ -53,6 +76,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
     var query = options.where ||  {};
     var offset = options.offset ||  0;
     var limit = options.limit || this.limit || 50;
+    var self = this;
     var sort = options.sort ? convertSort(options.sort) : {
       $natural: 1
     };
@@ -74,6 +98,8 @@ _.extend(MongoDB.prototype, Db.prototype, {
         .skip(offset)
         .limit(limit)
         .toArray(function (err, res) {
+          if(err || !res) return callback(err, res);
+          res = self._filter(res, model);
           callback(err, res);
         });
     });
@@ -81,13 +107,17 @@ _.extend(MongoDB.prototype, Db.prototype, {
 
   find: function (model, options, callback) {
     options = options || {};
-    var query = options.where ||  {
+    var self = this;
+    var query = options.where || {
       _id: this._getId(model)
     };
+
     debug('find %s', JSON.stringify(query));
     this._getCollection(model, options, function (err, col) {
       if (err) return callback(err);
       col.findOne(query, function (err, res) {
+        if(err) return callback(err);
+        res = self._filter(res, model);
         return callback(err, res);
       });
     });
@@ -97,7 +127,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
     var self = this;
     var key = this._getCollection(model, options);
 
-    debug('create: ' + key);
+    debug('create: %s', key);
     if (model.isNew()) {
       this.createId(model, options, function (err) {
         if (err) callback(err);
@@ -109,10 +139,10 @@ _.extend(MongoDB.prototype, Db.prototype, {
   },
 
   createId: function (model, options, callback) {
+    debug('createId');
     var createIdFn = model.createId ? model.createId : this._createDefaultId;
     createIdFn(function (err, id) {
       model.set(model.idAttribute, id);
-      model.set('_id', id);
       callback(err);
     });
   },
@@ -123,25 +153,33 @@ _.extend(MongoDB.prototype, Db.prototype, {
 
   update: function (model, options, callback) {
     var self = this;
-    debug('update:' + model.get(model.idAttribute));
     if (model.isNew()) {
       return this.create(model, options, callback);
     }
     if (options.inc) {
       return this.inc(model, options, callback);
     }
+    debug('update: %s', model.get(model.idAttribute));
     this._getCollection(model, options, function (err, collection) {
       if (err) return callback(err);
-      model.set('_id', self._getId(model));
-      collection.save(model.toJSON(), function(err, res) {
-        callback(err, model.toJSON());
+      var data = model.toJSON(options);
+      var idAdded = false;
+      if(!data._id) {
+        data._id = self._getId(model);
+        idAdded = true;
+      }
+      collection.save(data, function(err, res) {
+        if (idAdded && model.idAttribute !== '_id') {
+          delete data._id;
+        }
+        callback(err, data, res);
       });
     });
   },
 
   destroy: function (model, options, callback) {
     var self = this;
-    debug("destroy : " + model.get(model.idAttribute));
+    debug('destroy %s', model.get(model.idAttribute));
     if (model.isNew()) {
       return false;
     }
@@ -176,6 +214,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
           upsert: options.upsert || false
         },
         function (err, res) {
+
           callback(err, res || options.ignoreFailures ? 1 : res);
         }
       );
