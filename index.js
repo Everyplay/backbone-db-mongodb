@@ -44,7 +44,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
     var m = model.model || model;
     var idAttr = m.idAttribute || m.prototype.idAttribute;
 
-    if(res._id) {
+    if(res && res._id) {
       if(!res[idAttr]) {
         res[idAttr] = res._id;
       }
