@@ -73,8 +73,8 @@ _.extend(MongoDB.prototype, Db.prototype, {
 
   findAll: function (model, options, callback) {
     options = options || {};
-    var query = options.where ||  {};
-    var offset = options.offset ||  0;
+    var query = options.where || {};
+    var offset = options.offset || 0;
     var limit = options.limit || this.limit || 50;
     var self = this;
     var sort = options.sort ? convertSort(options.sort) : {
