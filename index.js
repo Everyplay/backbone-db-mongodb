@@ -73,8 +73,8 @@ _.extend(MongoDB.prototype, Db.prototype, {
 
   findAll: function (model, options, callback) {
     options = options || {};
-    var query = options.where || {};
-    var offset = options.offset || 0;
+    var query = options.where ||  {};
+    var offset = options.offset ||  0;
     var limit = options.limit || this.limit || 50;
     var self = this;
     var sort = options.sort ? convertSort(options.sort) : {
@@ -163,14 +163,11 @@ _.extend(MongoDB.prototype, Db.prototype, {
     this._getCollection(model, options, function (err, collection) {
       if (err) return callback(err);
       var data = model.toJSON(options);
-      var idAdded = false;
-      if(!data._id) {
-        data._id = self._getId(model);
-        idAdded = true;
-      }
-      collection.save(data, function(err, res) {
-        if (idAdded && model.idAttribute !== '_id') {
-          delete data._id;
+      var id = data._id || data[model.idAttribute];
+      delete data._id;
+      collection.update({_id: id}, {'$set': data}, {upsert: true, multi: false}, function(err, res) {
+        if (id && model.idAttribute === '_id') {
+          data._id = id;
         }
         callback(err, data, res);
       });
