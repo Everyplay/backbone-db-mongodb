@@ -5,6 +5,8 @@ node_js:
   0.10
 notifications:
   email: false
+  flowdock:
+    secure: "B9MEYlhgmaq4o+ANKPYpHIr0+uFacPfTBbEUUIN2Nvh15TjPHUcVUlrPU2/VqAmX0G6uHLd4Bglkdd3SblGI6ad7FkcSdkgsfpqruHYIUOlWQJX2VvrlULpn3QqWvPQZV4rlFhbLzwSVpebicIlt4yNEFAXoxTpC/94kfuoZPUc="
 before_script: make jshint
 script:
   - make test-coverage
