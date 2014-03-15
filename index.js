@@ -90,7 +90,6 @@ _.extend(MongoDB.prototype, Db.prototype, {
       }
 
       options.where = searchAttrs;
-            console.log(options.where );
     }
     var self = this;
     var query = options.where ||  {};
