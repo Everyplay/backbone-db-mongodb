@@ -1,6 +1,6 @@
 {
   "name": "backbone-db-mongodb",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "MongoDB driver for Backbone.Db",
   "main": "index.js",
   "scripts": {
