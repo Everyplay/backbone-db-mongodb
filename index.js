@@ -88,13 +88,14 @@ _.extend(MongoDB.prototype, Db.prototype, {
         var err = new Error('Cannot fetch model with given attributes');
         return callback(err);
       }
-      options.where = searchAttrs;
-    }
 
+      options.where = searchAttrs;
+            console.log(options.where );
+    }
+    var self = this;
     var query = options.where ||  {};
     var offset = options.offset ||  0;
     var limit = options.limit || this.limit || 50;
-    var self = this;
     var sort = options.sort ? convertSort(options.sort) : {
       $natural: 1
     };
@@ -115,11 +116,18 @@ _.extend(MongoDB.prototype, Db.prototype, {
         .sort(sort)
         .skip(offset)
         .limit(limit)
-        .toArray(function (err, res) {
-          if(err || !res) return callback(err, res);
-          res = self._filter(res, model);
-          if(!model.model) return callback(err, res && res.length && res[0]);
-          callback(err, res);
+        .toArray(function (err, results) {
+          if(!model.model) {
+            if(!results || results.length === 0) {
+              err = err || new Error('not found');
+            } else {
+              results = self._filter(results, model);
+            }
+            return callback(err, results && results.length && results[0]);
+          }
+          if(err || !results) return callback(err, results);
+          results = self._filter(results, model);
+          callback(null, results);
         });
     });
   },
