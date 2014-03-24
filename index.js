@@ -151,11 +151,9 @@ _.extend(MongoDB.prototype, Db.prototype, {
 
   create: function (model, options, callback) {
     var self = this;
-    var key = this._getCollection(model, options);
-
-    debug('create: %s', key);
     if (model.isNew()) {
       this.createId(model, options, function (err) {
+        debug('create: %s', model.id);
         if (err) callback(err);
         self.update(model, options, callback);
       });
