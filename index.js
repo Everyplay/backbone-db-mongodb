@@ -164,7 +164,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
 
   createId: function (model, options, callback) {
     debug('createId');
-    var createIdFn = model.createId ? model.createId : this._createDefaultId;
+    var createIdFn = model.createId ? model.createId.bind(model) : this._createDefaultId;
     createIdFn(function (err, id) {
       model.set(model.idAttribute, id);
       callback(err);
