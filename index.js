@@ -66,7 +66,11 @@ _.extend(MongoDB.prototype, Db.prototype, {
       id = model.id || model._id;
     }
     if(typeof id === 'string' && id.length === 24) {
-      id = new ObjectId(id);
+      try {
+        id = new ObjectId(id);
+      } catch (e) {
+        // was not valid ObjectId
+      }
     }
     return id;
   },
