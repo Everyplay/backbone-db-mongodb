@@ -96,12 +96,11 @@ _.extend(MongoDB.prototype, Db.prototype, {
       options.where = searchAttrs;
     }
     var self = this;
-    var query = options.where ||  {};
-    var offset = options.offset ||  0;
+    var query = options.where || {};
+    var offset = options.offset || 0;
     var limit = options.limit || this.limit || 50;
-    var sort = options.sort ? convertSort(options.sort) : {
-      $natural: 1
-    };
+    var sort = options.sort ? convertSort(options.sort) : false;
+
     if (options.after_id) {
       query._id = {
         $gt: options.after_id
@@ -114,12 +113,14 @@ _.extend(MongoDB.prototype, Db.prototype, {
     debug('findAll %s: limit: %s, offset: %s, sort: %s', JSON.stringify(query), limit, offset, JSON.stringify(sort));
     this._getCollection(model, options, function (err, collection) {
       if (err) return callback(err);
-      collection
+      var q = collection
         .find(query)
-        .sort(sort)
         .skip(offset)
-        .limit(limit)
-        .toArray(function (err, results) {
+        .limit(limit);
+        if (sort) {
+          q.sort(sort);
+        }
+        q.toArray(function (err, results) {
           if(!model.model) {
             if(!results || results.length === 0) {
               err = err || new Error('not found');
