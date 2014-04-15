@@ -1,4 +1,3 @@
-require('mocha-as-promised')();
 var _ = require('lodash');
 var MongoDB = require('../');
 var Promises = require('backbone-promises');
