@@ -110,6 +110,10 @@ _.extend(MongoDB.prototype, Db.prototype, {
         $lt: options.before_id
       };
     }
+    if (query.id) {
+      query._id = query.id;
+      delete query.id;
+    }
     debug('findAll %s: limit: %s, offset: %s, sort: %s', JSON.stringify(query), limit, offset, JSON.stringify(sort));
     this._getCollection(model, options, function (err, collection) {
       if (err) return callback(err);
