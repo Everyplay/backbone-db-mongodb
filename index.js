@@ -9,14 +9,26 @@ function MongoDB(client) {
 }
 
 function convertSort(sortProp) {
-  var sortOrder = 1;
-  if (sortProp && sortProp[0] === '-') {
-    sortOrder = -1;
-    sortProp = sortProp.substr(1);
+  function _convert(prop) {
+    var sortOrder = 1;
+    if (prop && prop[0] === '-') {
+      sortOrder = -1;
+      prop = prop.substr(1);
+    }
+    var ret = {};
+    ret[prop] = sortOrder;
+    return ret;
   }
-  var ret = {};
-  ret[sortProp] = sortOrder;
-  return ret;
+  if (_.isArray(sortProp)) {
+    var sortOpts = _.extend.apply(null,
+      [{}].concat(_.map(sortProp, function(prop) {
+        return _convert(prop);
+      }))
+    );
+    return sortOpts;
+  } else {
+    return _convert(sortProp);
+  }
 }
 
 
@@ -192,7 +204,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
     if (options.inc) {
       return this.inc(model, options, callback);
     }
-    debug('update: %s', model.get(model.idAttribute));
+    debug('update: %s %s', model.type, model.id);
     this._getCollection(model, options, function (err, collection) {
       if (err) return callback(err);
       var data = model.toJSON(options);

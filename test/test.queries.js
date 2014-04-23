@@ -117,6 +117,18 @@ describe('Query tests', function() {
       });
   });
 
+  it('should sort by multiple properties', function() {
+    var opts = {
+      sort: ['-value', '-name']
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert.equal(collection.length, 4);
+        assert.equal(collection.at(1).id, 4);
+      });
+  });
+
   it('should fetch collections first page sorted ascending', function() {
     var opts = {
       sort: 'value',
