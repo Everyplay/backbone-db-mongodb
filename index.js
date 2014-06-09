@@ -1,7 +1,8 @@
 var _ = require('lodash'),
   Db = require('backbone-db'),
   debug = require('debug')('backbone-db-mongodb'),
-  ObjectId = require('mongodb').BSONPure.ObjectID;
+  ObjectId = require('mongodb').BSONPure.ObjectID,
+  util = require('util');
 
 function MongoDB(client) {
   if (!client) throw new Error('Db.MongoDB requires a connected mongo client');
@@ -139,7 +140,8 @@ _.extend(MongoDB.prototype, Db.prototype, {
         q.toArray(function (err, results) {
           if(!model.model) {
             if(!results || results.length === 0) {
-              err = err || new Error('not found');
+              var errorMsg = util.format('%s (%s) not found (read)', model.type, model.id);
+              err = err || new Db.errors.NotFoundError(errorMsg);
             } else {
               results = self._filter(results, model);
             }
