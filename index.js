@@ -111,6 +111,13 @@ _.extend(MongoDB.prototype, Db.prototype, {
     var offset = options.offset || 0;
     var limit = options.limit || this.limit || 50;
     var sort = options.sort ? convertSort(options.sort) : false;
+    var projection;
+    if (options.fields) {
+      projection = {};
+      _.each(options.fields, function(field) {
+        projection[field] = 1;
+      });
+    }
 
     if (options.after_id) {
       query._id = {
@@ -125,11 +132,18 @@ _.extend(MongoDB.prototype, Db.prototype, {
       query._id = query.id;
       delete query.id;
     }
-    debug('findAll %s: limit: %s, offset: %s, sort: %s', JSON.stringify(query), limit, offset, JSON.stringify(sort));
+
+    debug('findAll %s: limit: %s, offset: %s, sort: %s, projection: %s',
+      JSON.stringify(query),
+      limit,
+      offset,
+      JSON.stringify(sort),
+      projection
+    );
     this._getCollection(model, options, function(err, collection) {
       if (err) return callback(err);
       var q = collection
-        .find(query)
+        .find(query, {fields: projection})
         .skip(offset)
         .limit(limit);
       if (sort) {

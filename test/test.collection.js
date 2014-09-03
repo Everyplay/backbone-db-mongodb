@@ -48,6 +48,17 @@ describe('Collection tests', function () {
       });
   });
 
+  it('should fetch only specified fields', function() {
+    collection = new this.Collection();
+    return collection
+      .fetch({fields: ['id']})
+      .then(function () {
+        assert(collection.length === 1);
+        var json = collection.toJSON();
+        assert(Object.keys(json[0]).length === 1);
+      });
+  });
+
   it('should remove model from collection', function () {
     testId = model.id;
     return model.destroy();
