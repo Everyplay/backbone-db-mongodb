@@ -100,7 +100,8 @@ _.extend(MongoDB.prototype, Db.prototype, {
         }
       });
       if (!Object.keys(searchAttrs).length) {
-        var err = new Error('Cannot fetch model with given attributes');
+        var errMsg = util.format('Cannot fetch model %s with given attributes %s', model.type, JSON.stringify(searchAttrs));
+        var err = new Error(errMsg);
         return callback(err);
       }
 
