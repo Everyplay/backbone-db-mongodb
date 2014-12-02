@@ -144,18 +144,187 @@ describe('Query tests', function() {
       });
   });
 
-  it('should page through models with after_id', function() {
+  it('should page through models with before_id', function() {
     var opts = {
-      sort: 'value',
-      limit: 2,
-      after_id: testId
+      sort: 'id'
     };
     return collection
       .fetch(opts)
       .then(function() {
-        var values = collection.pluck('value');
-        assert(values[0] === 2);
-        assert(values[1] === 3);
+        assert(collection.at(0).id === 1);
+        assert(collection.at(1).id === 2);
+        assert(collection.at(2).id === 3);
+        assert(collection.at(3).id === 4);
+
+        return collection.fetch({
+          sort: 'id',
+          limit: 2,
+          before_id: 4
+        }).then(function() {
+          assert(collection.at(0).id === 2);
+          assert(collection.at(1).id === 3);
+        });
+      });
+  });
+
+  it('should page through models with before_id and desc sort', function() {
+    var opts = {
+      sort: '-id'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 4);
+        assert(collection.at(1).id === 3);
+        assert(collection.at(2).id === 2);
+        assert(collection.at(3).id === 1);
+
+        return collection.fetch({
+          sort: '-id',
+          limit: 2,
+          before_id: 1
+        }).then(function() {
+          assert(collection.at(0).id === 3);
+          assert(collection.at(1).id === 2);
+        });
+      });
+  });
+
+  it('should page through models with after_id', function() {
+    var opts = {
+      sort: 'id'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 1);
+        assert(collection.at(1).id === 2);
+        assert(collection.at(2).id === 3);
+        assert(collection.at(3).id === 4);
+
+        return collection.fetch({
+          sort: 'id',
+          limit: 2,
+          after_id: 2
+        }).then(function() {
+          assert(collection.at(0).id === 3);
+          assert(collection.at(1).id === 4);
+        });
+      });
+  });
+
+  it('should page through models with after_id and desc sort', function() {
+    var opts = {
+      sort: '-id'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 4);
+        assert(collection.at(1).id === 3);
+        assert(collection.at(2).id === 2);
+        assert(collection.at(3).id === 1);
+
+        return collection.fetch({
+          sort: '-id',
+          limit: 2,
+          after_id: 3
+        }).then(function() {
+          assert(collection.at(0).id === 2);
+          assert(collection.at(1).id === 1);
+        });
+      });
+  });
+
+  it('should page through models with before_id created_at sort', function() {
+    var opts = {
+      sort: 'created_at'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 1);
+        assert(collection.at(1).id === 2);
+        assert(collection.at(2).id === 3);
+        assert(collection.at(3).id === 4);
+
+        return collection.fetch({
+          sort: 'id',
+          limit: 2,
+          before_id: 4
+        }).then(function() {
+          assert(collection.at(0).id === 2);
+          assert(collection.at(1).id === 3);
+        });
+      });
+  });
+
+  it('should page through models with before_id and desc created_at sort', function() {
+    var opts = {
+      sort: '-created_at'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 4);
+        assert(collection.at(1).id === 3);
+        assert(collection.at(2).id === 2);
+        assert(collection.at(3).id === 1);
+
+        return collection.fetch({
+          sort: '-created_at',
+          limit: 2,
+          before_id: 1
+        }).then(function() {
+          assert(collection.at(0).id === 3);
+          assert(collection.at(1).id === 2);
+        });
+      });
+  });
+
+  it('should page through models with after_id created_at sort', function() {
+    var opts = {
+      sort: 'created_at'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 1);
+        assert(collection.at(1).id === 2);
+        assert(collection.at(2).id === 3);
+        assert(collection.at(3).id === 4);
+
+        return collection.fetch({
+          sort: 'created_at',
+          limit: 2,
+          after_id: 2
+        }).then(function() {
+          assert(collection.at(0).id === 3);
+          assert(collection.at(1).id === 4);
+        });
+      });
+  });
+
+  it('should page through models with after_id and desc created_at sort', function() {
+    var opts = {
+      sort: '-created_at'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 4);
+        assert(collection.at(1).id === 3);
+        assert(collection.at(2).id === 2);
+        assert(collection.at(3).id === 1);
+
+        return collection.fetch({
+          sort: '-created_at',
+          limit: 2,
+          after_id: 3
+        }).then(function() {
+          assert(collection.at(0).id === 2);
+          assert(collection.at(1).id === 1);
+        });
       });
   });
 
@@ -171,21 +340,6 @@ describe('Query tests', function() {
         assert(values[0] === 3);
         assert(values[1] === 2);
         testId = collection.at(0).id;
-      });
-  });
-
-  it('should page through models with before_id', function() {
-    var opts = {
-      sort: '-value',
-      limit: 2,
-      before_id: testId
-    };
-    return collection
-      .fetch(opts)
-      .then(function() {
-        var values = collection.pluck('value');
-        assert(values[0] === 2);
-        assert(values[1] === 1);
       });
   });
 

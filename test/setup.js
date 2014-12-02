@@ -49,19 +49,23 @@ exports.clearDb = function (done) {
 var fixtures = [{
   id: 1,
   value: 1,
-  name: 'a'
+  name: 'a',
+  created_at: 10
 }, {
   id: 2,
   value: 2,
-  name: 'b'
+  name: 'b',
+  created_at: 20
 }, {
   id: 3,
   value: 3,
-  name: 'c'
+  name: 'c',
+  created_at: 25
 }, {
   id: 4,
   value: 2,
-  name: 'c'
+  name: 'c',
+  created_at: 35
 }, ];
 
 exports.insertFixtureData = function (collection, cb) {

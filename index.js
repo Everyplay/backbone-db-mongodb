@@ -120,14 +120,49 @@ _.extend(MongoDB.prototype, Db.prototype, {
       });
     }
 
+    var reverseResults = false;
+    var sortProperty;
+
+    if (sort && (options.after_id || options.before_id)) {
+      var keys;
+      if ((options.after_id || options.before_id) && (keys = _.keys(sort)).length > 1) {
+        return callback(new Error("before_id and after_id can only be used with single sort param"));
+      }
+
+      if (sort.id) {
+        sortProperty = 'id';
+      } else {
+        sortProperty = keys[0];
+      }
+    }
+
     if (options.after_id) {
-      query._id = {
-        $gt: options.after_id
-      };
+      if (sort && sort[sortProperty] === -1) {
+        query._id = {
+          $lt: options.after_id
+        };
+
+        sort[sortProperty] = 1;
+        reverseResults = true;
+      } else {
+        query._id = {
+          $gt: options.after_id
+        };
+      }
     } else if (options.before_id) {
-      query._id = {
-        $lt: options.before_id
-      };
+      if (sort && sort[sortProperty] === -1) {
+        query._id = {
+          $gt: options.before_id
+        };
+        sort[sortProperty] = 1;
+        reverseResults = true;
+      } else {
+        query._id = {
+          $lt: options.before_id
+        };
+        sort[sortProperty] = -1;
+        reverseResults = true;
+      }
     }
     if (query.id) {
       query._id = query.id;
@@ -161,6 +196,11 @@ _.extend(MongoDB.prototype, Db.prototype, {
           return callback(err, results && results.length && results[0]);
         }
         if (err || !results) return callback(err, results);
+
+        if (reverseResults) {
+          results = results.reverse();
+        }
+
         results = self._filter(results, model);
         callback(null, results);
       });
