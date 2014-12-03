@@ -249,7 +249,7 @@ describe('Query tests', function() {
         assert(collection.at(3).id === 4);
 
         return collection.fetch({
-          sort: 'id',
+          sort: opts.sort,
           limit: 2,
           before_id: 4
         }).then(function() {
@@ -272,10 +272,11 @@ describe('Query tests', function() {
         assert(collection.at(3).id === 1);
 
         return collection.fetch({
-          sort: '-created_at',
+          sort: opts.sort,
           limit: 2,
           before_id: 1
         }).then(function() {
+          assert.equal(collection.length, 2);
           assert(collection.at(0).id === 3);
           assert(collection.at(1).id === 2);
         });
@@ -295,17 +296,17 @@ describe('Query tests', function() {
         assert(collection.at(3).id === 4);
 
         return collection.fetch({
-          sort: 'created_at',
-          limit: 2,
+          sort: opts.sort,
           after_id: 2
         }).then(function() {
+          assert.equal(collection.length, 2);
           assert(collection.at(0).id === 3);
           assert(collection.at(1).id === 4);
         });
       });
   });
 
-  it('should page through models with after_id and desc created_at sort', function() {
+  it('should page through models with after_id and -created_at sort', function() {
     var opts = {
       sort: '-created_at'
     };
@@ -318,7 +319,7 @@ describe('Query tests', function() {
         assert(collection.at(3).id === 1);
 
         return collection.fetch({
-          sort: '-created_at',
+          sort: opts.sort,
           limit: 2,
           after_id: 3
         }).then(function() {
