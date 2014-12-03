@@ -352,17 +352,17 @@ describe('Query tests', function() {
       });
   });
 
-  it('should fetch models with before_id and -created_at sort & limit (1)', function() {
+  it('should fetch models with before_id (2) and -created_at sort & limit (1)', function() {
     var opts = {
       sort: '-created_at',
       limit: 1,
-      before_id: 1
+      before_id: 2
     };
     return collection
       .fetch(opts)
       .then(function() {
         assert.equal(collection.length, 1);
-        assert(collection.at(0).id === 2);
+        assert(collection.at(0).id === 3);
       });
   });
 
@@ -408,6 +408,28 @@ describe('Query tests', function() {
         }).then(function() {
           assert(collection.at(0).id === 2);
           assert(collection.at(1).id === 1);
+        });
+      });
+  });
+
+  it('should page through models with after_id and -created_at sort & limit (1)', function() {
+    var opts = {
+      sort: '-created_at'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 4);
+        assert(collection.at(1).id === 3);
+        assert(collection.at(2).id === 2);
+        assert(collection.at(3).id === 1);
+
+        return collection.fetch({
+          sort: opts.sort,
+          limit: 1,
+          after_id: 3
+        }).then(function() {
+          assert(collection.at(0).id === 2);
         });
       });
   });
