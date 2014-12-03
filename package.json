@@ -1,6 +1,6 @@
 {
   "name": "backbone-db-mongodb",
-  "version": "0.2.18",
+  "version": "0.2.19",
   "description": "MongoDB driver for Backbone.Db",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "backbone": "~1.1.0",
-    "backbone-db": "~0.4",
+    "backbone-db": "~0.5",
     "backbone-promises": "~0.2",
     "debug": "~0.8",
     "mongodb": "~1.4",
