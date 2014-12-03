@@ -190,6 +190,29 @@ describe('Query tests', function() {
       });
   });
 
+  it('should page through models with before_id (2) and desc sort and limit (1)', function() {
+    var opts = {
+      sort: '-id'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 4);
+        assert(collection.at(1).id === 3);
+        assert(collection.at(2).id === 2);
+        assert(collection.at(3).id === 1);
+
+        return collection.fetch({
+          sort: '-id',
+          limit: 1,
+          before_id: 2
+        }).then(function() {
+          assert.equal(collection.length, 1);
+          assert(collection.at(0).id === 3);
+        });
+      });
+  });
+
   it('should page through models with after_id', function() {
     var opts = {
       sort: 'id'
@@ -213,6 +236,28 @@ describe('Query tests', function() {
       });
   });
 
+  it('should page through models with after_id & limit (1)', function() {
+    var opts = {
+      sort: 'id'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 1);
+        assert(collection.at(1).id === 2);
+        assert(collection.at(2).id === 3);
+        assert(collection.at(3).id === 4);
+
+        return collection.fetch({
+          sort: 'id',
+          limit: 1,
+          after_id: 2
+        }).then(function() {
+          assert(collection.at(0).id === 3);
+        });
+      });
+  });
+
   it('should page through models with after_id and desc sort', function() {
     var opts = {
       sort: '-id'
@@ -230,8 +275,32 @@ describe('Query tests', function() {
           limit: 2,
           after_id: 3
         }).then(function() {
+          assert.equal(collection.length, 2);
           assert(collection.at(0).id === 2);
           assert(collection.at(1).id === 1);
+        });
+      });
+  });
+
+  it('should page through models with after_id (3) and desc sort & limit (1)', function() {
+    var opts = {
+      sort: '-id'
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert(collection.at(0).id === 4);
+        assert(collection.at(1).id === 3);
+        assert(collection.at(2).id === 2);
+        assert(collection.at(3).id === 1);
+
+        return collection.fetch({
+          sort: '-id',
+          limit: 1,
+          after_id: 3
+        }).then(function() {
+          assert.equal(collection.length, 1);
+          assert(collection.at(0).id === 2);
         });
       });
   });
@@ -259,7 +328,7 @@ describe('Query tests', function() {
       });
   });
 
-  it('should page through models with before_id and desc created_at sort', function() {
+  it('should page through models with before_id and -created_at sort', function() {
     var opts = {
       sort: '-created_at'
     };
@@ -280,6 +349,20 @@ describe('Query tests', function() {
           assert(collection.at(0).id === 3);
           assert(collection.at(1).id === 2);
         });
+      });
+  });
+
+  it('should fetch models with before_id and -created_at sort & limit (1)', function() {
+    var opts = {
+      sort: '-created_at',
+      limit: 1,
+      before_id: 1
+    };
+    return collection
+      .fetch(opts)
+      .then(function() {
+        assert.equal(collection.length, 1);
+        assert(collection.at(0).id === 2);
       });
   });
 

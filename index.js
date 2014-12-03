@@ -141,9 +141,6 @@ _.extend(MongoDB.prototype, Db.prototype, {
         query._id = {
           $lt: options.after_id
         };
-
-        sort[sortProperty] = 1;
-        reverseResults = true;
       } else {
         query._id = {
           $gt: options.after_id
@@ -176,6 +173,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
       JSON.stringify(sort),
       projection
     );
+
     this._getCollection(model, options, function(err, collection) {
       if (err) return callback(err);
       var q = collection
