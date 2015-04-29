@@ -124,6 +124,8 @@ describe('MongoDB', function() {
             amount: 1
           },
           ignoreFailures: true
+        }).then(function(res) {
+          assert.equal(typeof res, 'object');
         });
     });
 
