@@ -316,7 +316,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
           upsert: options.upsert || false
         },
         function(err, res) {
-          callback(err, res || options.ignoreFailures ? {} : res);
+          callback(err, res || (options.ignoreFailures ? {} : res));
         }
       );
     });
