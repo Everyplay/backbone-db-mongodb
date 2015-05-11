@@ -81,6 +81,7 @@ describe('Query tests', function() {
     var opts = {
       limit: 2,
       offset: 1,
+      sort: 'created_at'
     };
     return collection
       .fetch(opts)

@@ -291,7 +291,7 @@ _.extend(MongoDB.prototype, Db.prototype, {
       collection.remove({
         _id: self._getId(model)
       }, function(err, res) {
-        callback(err, res || options.ignoreFailures ? 1 : res);
+        callback(err, res || (options.ignoreFailures ? 1 : res));
       });
     });
   },
